@@ -22,7 +22,6 @@ async function initExercise() {
 
   if (location.search.split("=")[1] === undefined) {
     workout = await API.createWorkout()
-    console.log(workout)
   }
   if (workout) {
     location.search = "?id=" + workout._id;
@@ -86,6 +85,11 @@ function validateInputs() {
     }
   }
 
+  setButtonDisabledAttribute(isValid);
+
+}
+
+function setButtonDisabledAttribute(isValid) {
   if (isValid) {
     completeButton.removeAttribute("disabled");
     addButton.removeAttribute("disabled");
@@ -116,6 +120,7 @@ async function handleFormSubmit(event) {
 
   await API.addExercise(workoutData);
   clearInputs();
+  setButtonDisabledAttribute(false);
   toast.classList.add("success");
 }
 

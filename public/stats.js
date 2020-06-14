@@ -1,18 +1,17 @@
 // get all workout data from back-end
 
 fetch("/api/workouts/range")
-  .then(response => {
-    return response.json();
-  })
-  .then(data => {
-    populateChart(data);
-  });
-
+.then(response => {
+  return response.json();
+})
+.then(data => {
+  populateChart(data);
+});
 
 API.getWorkoutsInRange()
 
-  function generatePalette() {
-    const arr = [
+function generatePalette() {
+  const arr = [
     "#003f5c",
     "#2f4b7c",
     "#665191",
@@ -32,11 +31,12 @@ API.getWorkoutsInRange()
   ]
 
   return arr;
-  }
+}
+
 function populateChart(data) {
-  let durations = duration(data);
-  let pounds = calculateTotalWeight(data);
   let workouts = workoutNames(data);
+  let durations = duration(data, workouts);
+  let kilos = calculateTotalWeight(data, workouts);
   const colors = generatePalette();
 
   let line = document.querySelector("#canvas").getContext("2d");
@@ -106,15 +106,15 @@ function populateChart(data) {
       ],
       datasets: [
         {
-          label: "Pounds",
-          data: pounds,
+          label: "Kilos",
+          data: kilos,
           backgroundColor: [
             "rgba(255, 99, 132, 0.2)",
             "rgba(54, 162, 235, 0.2)",
             "rgba(255, 206, 86, 0.2)",
             "rgba(75, 192, 192, 0.2)",
             "rgba(153, 102, 255, 0.2)",
-            "rgba(255, 159, 64, 0.2)"
+            "rgba(255, 159, 64, 0.2)",
           ],
           borderColor: [
             "rgba(255, 99, 132, 1)",
@@ -131,7 +131,7 @@ function populateChart(data) {
     options: {
       title: {
         display: true,
-        text: "Pounds Lifted"
+        text: "Kilos Lifted"
       },
       scales: {
         yAxes: [
@@ -173,7 +173,7 @@ function populateChart(data) {
         {
           label: "Excercises Performed",
           backgroundColor: colors,
-          data: pounds
+          data: kilos
         }
       ]
     },
@@ -186,28 +186,49 @@ function populateChart(data) {
   });
 }
 
-function duration(data) {
+function duration(data, workouts) {
   let durations = [];
 
-  data.forEach(workout => {
-    workout.exercises.forEach(exercise => {
-      durations.push(exercise.duration);
-    });
+  workouts.forEach(workout => {
+    let uniqueWorkout = workout;
+    let exerciseDuration = 0;
+    for (let i = 0; i < data.length; i++) {
+      let { exercises } = data[i];
+      for (let i = 0; i < exercises.length; i++) {
+        exercises.forEach(exercise => {
+          if (exercise.name === uniqueWorkout) {
+            exerciseDuration += exercise.duration;
+          }
+        });
+      }
+    }
+    durations.push(exerciseDuration);
   });
-
   return durations;
 }
 
-function calculateTotalWeight(data) {
-  let total = [];
+function calculateTotalWeight(data, workouts) {
+  let totalWeight = [];
 
-  data.forEach(workout => {
-    workout.exercises.forEach(exercise => {
-      total.push(exercise.weight);
-    });
+  workouts.forEach(workout => {
+    let uniqueWorkout = workout;
+    let subTotalWeight = 0;
+    for (let i = 0; i < data.length; i++) {
+      let { exercises } = data[i];
+      for (let i = 0; i < exercises.length; i++) {
+        exercises.forEach(exercise => {
+          if (
+            exercise.name === uniqueWorkout &&
+            exercise.type === "resistance"
+          ) {
+            subTotalWeight += exercise.weight;
+          }
+        });
+      }
+    }
+    totalWeight.push(subTotalWeight);
   });
-
-  return total;
+  return totalWeight;
 }
 
 function workoutNames(data) {
@@ -219,5 +240,7 @@ function workoutNames(data) {
     });
   });
   
-  return workouts;
+  const uniqueWorkouts = new Set(workouts);
+  const uniqueWorkoutsArray = [...uniqueWorkouts];
+  return uniqueWorkoutsArray;
 }

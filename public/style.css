@@ -17,12 +17,15 @@ body {
 }
 
 nav {
-  background-color: #5793fd;
+  background-color: #003ca4;
   color: #ffffff;
-  height: 80px;
-  padding: 10px;
+  height: 60px;
   line-height: 3;
   font-size: 1.2rem;
+}
+
+nav > a {
+  padding: 0 10px;
 }
 
 a,
@@ -394,7 +397,7 @@ form > button {
 
 .prev-workout .buttons {
   display: flex;
-  height: 75px;
+  height: 55px;
   margin-top: 30px;
 }
 
